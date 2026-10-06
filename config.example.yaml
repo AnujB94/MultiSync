@@ -1,0 +1,44 @@
+window:
+  title: "DualPose Viewer"
+  target_fps: 30
+
+webcam:
+  cam_id: "laptop"
+  source: 0
+  width: 640
+  height: 360
+  rotate: 0
+  flip_horizontal: false
+  flip_vertical: false
+
+phone:
+  cam_id: "phone"
+  source: "rtsp://192.168.1.50:554/stream1"
+  width: 640
+  height: 360
+  rotate: 0
+  flip_horizontal: false
+  flip_vertical: false
+  open_timeout_ms: 2000
+  read_timeout_ms: 2000
+  reconnect_backoff_seconds: 1.0
+  stale_timeout_seconds: 2.0
+
+pipeline:
+  detector_mode: "lightweight"
+  detector_backend: "onnxruntime"
+  detector_device: "cpu"
+  min_joint_confidence: 0.2
+  confidence_hold_frames: 4
+  temporal_window: 243
+  infer_every_n_frames: 1
+  lifter_stride: 1
+  lifter_checkpoint: "checkpoints/cpn-ft-243-dbb-causal.bin"
+  use_lifter_checkpoint: true
+  weak_perspective: true
+  fx_scale: 1.1
+  fy_scale: 1.1
+
+recording:
+  enabled: false
+  output_dir: "recordings"

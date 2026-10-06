@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Local runtime configuration with RTSP URLs and credentials.
+config.local.yaml
+
+# Runtime outputs
+runs/
+recordings/
+models/
+checkpoints/
