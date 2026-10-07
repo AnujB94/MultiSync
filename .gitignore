@@ -17,4 +17,5 @@ config.local.yaml
 runs/
 recordings/
 models/
+calibration/*.npz
 checkpoints/

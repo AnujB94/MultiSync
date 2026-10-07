@@ -6,6 +6,7 @@ This project implements a low-latency step-1 dual-camera viewer:
 - Camera B: IP camera stream (RTSP)
 - Independent 2D and monocular 3D pose pipeline per camera
 - Single OpenCV window with video overlays, small 3D panels, and status metrics
+- Optional cross-camera identity matching (`Person 1`) with **zero manual calibration**
 
 The implementation is CPU-first and prioritizes latency over absolute frame rate.
 
@@ -37,6 +38,7 @@ Edit `config.local.yaml`:
 - Set `phone.source` to your RTSP URL
 - Keep `webcam.source` as an integer index (`0` by default)
 - Tune `pipeline.infer_every_n_frames` and `pipeline.lifter_stride`
+- For identity matching, enable/configure `matching` (manual calibration is optional)
 
 ## 4) Optional VideoPose3D checkpoint
 
@@ -58,14 +60,59 @@ Hotkeys:
 - `q`: quit
 - `r`: toggle recording
 
-## 6) CPU tuning tips
+## 6) Calibration-free identity matching
+
+Default identity matching mode is calibration-free:
+
+- background-feature auto-geometry (SIFT/ORB) when enough overlap/texture exists
+- automatic fallback to appearance-only mode when geometry is unavailable or unreliable
+- no face recognition (body appearance + pose proportions only)
+
+Enable in config:
+
+```yaml
+matching:
+  enabled: true
+  geometry_mode: "auto"
+  reid_enabled: true
+  reid_download_if_missing: true
+```
+
+The app will label both detections as `Person 1` only after temporal confirmation.
+If geometry/visibility/timing quality drops, state falls back to `unknown`.
+
+Diagnostics in the status strip show whether matching runs in `geometry` or `appearance_only` mode.
+
+## 7) Optional legacy checkerboard calibration
+
+If you want stronger geometric gating for a fixed setup, you can still create and use a stereo calibration file:
+
+```powershell
+python calibrate.py --config config.local.yaml --output calibration/stereo_calibration.npz --cols 9 --rows 6 --square-size-m 0.025 --min-pairs 20
+```
+
+Then set:
+
+```yaml
+calibration:
+  enabled: true
+  path: "calibration/stereo_calibration.npz"
+
+matching:
+  geometry_mode: "calibrated"
+```
+## 8) CPU tuning tips
 
 - Use `webcam.width/height = 640x360` and same for IP stream where possible
 - Keep `pipeline.detector_mode = lightweight`
 - Increase `pipeline.infer_every_n_frames` to 2 or 3 if FPS drops
 - Increase `pipeline.lifter_stride` to 2 if lifter is heavy
+- Keep `matching.reid_interval_ms` around `500` or higher on weaker CPUs
+- Keep `matching.reid_threads = 1` to avoid thread contention with pose inference
+- If auto-geometry is expensive on your CPU, switch `matching.auto_feature_type` to `orb`
+- Increase `matching.auto_estimation_interval_ms` and `matching.auto_health_check_interval_ms`
 
-## 7) Tests and lint
+## 9) Tests and lint
 
 ```powershell
 python -m pytest -q

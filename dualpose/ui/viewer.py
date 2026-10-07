@@ -5,9 +5,9 @@ import time
 import cv2
 import numpy as np
 
-from dualpose.ui.draw import draw_pose_overlay, render_3d_panel
+from dualpose.ui.draw import draw_identity_box, draw_pose_overlay, render_3d_panel
 from dualpose.utils.timing import CameraStats
-from dualpose.utils.types import FramePacket, PoseResult
+from dualpose.utils.types import FramePacket, IdentityMatch, IdentityState, PoseResult
 
 
 class Viewer:
@@ -38,6 +38,7 @@ class Viewer:
         frame_b: FramePacket | None,
         pose_a: PoseResult | None,
         pose_b: PoseResult | None,
+        identity: IdentityMatch | None,
         stats: dict[str, CameraStats],
         recording: bool,
     ) -> int:
@@ -70,6 +71,11 @@ class Viewer:
             if frame_b is not None
             else self._missing_feed(base_w, base_h, "No phone frame")
         )
+        if identity is not None and identity.state == IdentityState.SAME:
+            if pose_a is not None:
+                img_a = draw_identity_box(img_a, pose_a.bbox_xyxy, "Person 1")
+            if pose_b is not None:
+                img_b = draw_identity_box(img_b, pose_b.bbox_xyxy, "Person 1")
 
         h = min(img_a.shape[0], img_b.shape[0], base_h)
         w = min(img_a.shape[1], img_b.shape[1], base_w)
@@ -126,9 +132,24 @@ class Viewer:
             1,
             cv2.LINE_AA,
         )
+        if identity is None:
+            match_line = "match=disabled"
+        elif identity.evidence is None:
+            match_line = f"match={identity.state.value}"
+        else:
+            ev = identity.evidence
+            fs = "n/a" if ev.fused_score is None else f"{ev.fused_score:.2f}"
+            ge = "n/a" if ev.epipolar_error_px is None else f"{ev.epipolar_error_px:.2f}px"
+            ap = "n/a" if ev.appearance_score is None else f"{ev.appearance_score:.2f}"
+            gm = f"{ev.geometry_source}/{ev.geometry_state}"
+            match_line = (
+                f"match={identity.state.value} mode={ev.mode} score={fs} geo={ge} "
+                f"app={ap} geom={gm} skew={ev.skew_ms:.0f}ms reason={ev.reason}"
+            )
+
         cv2.putText(
             strip,
-            f"[{rec}] q=quit r=record",
+            f"[{rec}] q=quit r=record | {match_line}",
             (10, 72),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.50,

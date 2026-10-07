@@ -57,6 +57,37 @@ def draw_pose_overlay(image: np.ndarray, result: PoseResult | None) -> np.ndarra
     return out
 
 
+def draw_identity_box(
+    image: np.ndarray,
+    bbox_xyxy: np.ndarray | None,
+    label: str,
+    color: tuple[int, int, int] = (80, 255, 80),
+) -> np.ndarray:
+    if bbox_xyxy is None:
+        return image
+    out = image.copy()
+    x1, y1, x2, y2 = [int(round(float(v))) for v in bbox_xyxy]
+    h, w = out.shape[:2]
+    x1 = max(0, min(w - 1, x1))
+    x2 = max(0, min(w - 1, x2))
+    y1 = max(0, min(h - 1, y1))
+    y2 = max(0, min(h - 1, y2))
+    if x2 <= x1 or y2 <= y1:
+        return out
+    cv2.rectangle(out, (x1, y1), (x2, y2), color, 2, cv2.LINE_AA)
+    cv2.putText(
+        out,
+        label,
+        (x1, max(18, y1 - 6)),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        color,
+        2,
+        cv2.LINE_AA,
+    )
+    return out
+
+
 def render_3d_panel(result: PoseResult | None, width: int, height: int) -> np.ndarray:
     panel = np.zeros((height, width, 3), dtype=np.uint8)
     panel[:, :] = (24, 24, 24)

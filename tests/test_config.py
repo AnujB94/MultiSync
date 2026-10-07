@@ -54,6 +54,10 @@ recording:
     assert cfg.window.title == "X"
     assert cfg.webcam.source == 0
     assert cfg.phone.source.startswith("rtsp://")
+    assert cfg.calibration.enabled is False
+    assert cfg.matching.enabled is False
+    assert cfg.matching.geometry_mode == "auto"
+    assert cfg.matching.auto_feature_type in {"sift", "orb"}
 
 
 def test_load_config_requires_phone_url(tmp_path: Path) -> None:

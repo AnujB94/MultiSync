@@ -42,3 +42,64 @@ pipeline:
 recording:
   enabled: false
   output_dir: "recordings"
+
+calibration:
+  enabled: false
+  path: "calibration/stereo_calibration.npz"
+  checkerboard_cols: 9
+  checkerboard_rows: 6
+  square_size_m: 0.025
+  time_offset_s: 0.0
+  require_transform_match: true
+
+matching:
+  enabled: false
+  geometry_mode: "auto"   # auto | off | calibrated
+  max_pose_age_ms: 500.0
+  max_pair_skew_ms: 80.0
+  min_common_joints: 6
+  epipolar_sigma_px: 6.0
+  epipolar_hard_reject_px: 15.0
+  reid_enabled: false
+  reid_model_path: "models/osnet_x0_25_msmt17.onnx"
+  reid_download_if_missing: false
+  reid_interval_ms: 500.0
+  reid_min_box_area: 2500
+  reid_threads: 1
+  reid_gallery_ttl_ms: 4000.0
+  reid_exclude_head: true
+  weight_geometry: 0.55
+  weight_appearance: 0.35
+  weight_motion: 0.0
+  same_threshold: 0.75
+  different_threshold: 0.45
+  confirm_window: 7
+  confirm_required: 5
+  release_required: 8
+  appearance_weight_reid: 0.60
+  appearance_weight_hist: 0.30
+  appearance_weight_proportions: 0.10
+  appearance_only_same_threshold: 0.82
+  appearance_only_different_threshold: 0.58
+  appearance_only_confirm_window: 10
+  appearance_only_confirm_required: 8
+  appearance_only_release_required: 5
+  auto_feature_type: "sift"    # sift | orb
+  auto_downscale: 0.5
+  auto_max_features: 1500
+  auto_lowe_ratio: 0.75
+  auto_min_mutual_matches: 80
+  auto_min_inliers: 40
+  auto_min_inlier_ratio: 0.35
+  auto_ransac_threshold_px: 1.5
+  auto_median_error_px: 1.0
+  auto_p90_error_px: 2.5
+  auto_grid_rows: 6
+  auto_grid_cols: 8
+  auto_min_covered_cells: 12
+  auto_min_hull_ratio: 0.25
+  auto_model_expiry_ms: 12000.0
+  auto_estimation_interval_ms: 900.0
+  auto_health_check_interval_ms: 2500.0
+  auto_failure_reinit_count: 3
+  auto_person_mask_pad_ratio: 0.15
